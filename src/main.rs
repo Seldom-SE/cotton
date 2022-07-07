@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use board::BoardPlugin;
 use camera::CameraPlugin;
+use harbor::HarborPlugin;
 use image::ImagePlugin;
 use tile::TilePlugin;
 
@@ -21,7 +22,7 @@ mod robber;
 mod tile;
 
 static TITLE: &str = "Cotton";
-const CLEAR_COLOR: Color = Color::BLACK;
+const CLEAR_COLOR: Color = Color::rgb(0.114, 0.281, 0.846);
 
 fn main() {
     App::new()
@@ -32,6 +33,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(BoardPlugin)
         .add_plugin(CameraPlugin)
+        .add_plugin(HarborPlugin)
         .add_plugin(ImagePlugin)
         .add_plugin(TilePlugin)
         .insert_resource(ClearColor(CLEAR_COLOR))

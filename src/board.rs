@@ -55,6 +55,39 @@ const TILE_POSITIONS: [(f32, f32); TILE_COUNT] = [
     (110., -190.),
 ];
 
+const HARBOR_POSITIONS: [(f32, f32); HARBOR_COUNT] = [
+    (-151.25, 261.25),
+    (-68.75, 261.25),
+    (-41.25, 261.25),
+    (41.25, 261.25),
+    (68.75, 261.25),
+    (151.25, 261.25),
+    (192.5, 190.),
+    (206.25, 166.25),
+    (247.5, 95.),
+    (261.25, 71.25),
+    (302.5, 0.),
+    (261.25, -71.25),
+    (247.5, -95.),
+    (206.25, -166.25),
+    (192.5, -190.),
+    (151.25, -261.25),
+    (68.75, -261.25),
+    (41.25, -261.25),
+    (-41.25, -261.25),
+    (-68.75, -261.25),
+    (-151.25, -261.25),
+    (-192.5, -190.),
+    (-206.25, -166.25),
+    (-247.5, -95.),
+    (-261.25, -71.25),
+    (-302.5, 0.),
+    (-261.25, 71.25),
+    (-247.5, 95.),
+    (-206.25, 166.25),
+    (-192.5, 190.),
+];
+
 const TILE_Z: f32 = 0.;
 const CHIT_Z: f32 = 1.;
 const ROBBER_Z: f32 = 1.;
@@ -93,8 +126,15 @@ fn generate_board(mut commands: Commands) {
                 ))
                 .id()
         }),
-        harbors: Option::<Harbor>::shuffle()
-            .map(|harbor| commands.spawn().insert(HarborSlot(harbor)).id()),
+        harbors: enumerate(Option::<Harbor>::shuffle()).map(|(i, harbor)| {
+            commands
+                .spawn()
+                .insert(HarborSlot(harbor))
+                .insert(Transform::from_translation(
+                    Vec2::from(HARBOR_POSITIONS[i]).extend(HARBOR_Z),
+                ))
+                .id()
+        }),
         roads: [(); ROAD_COUNT].map(|_| commands.spawn().insert(RoadSlot(None)).id()),
         buildings: [(); BUILDING_COUNT].map(|_| commands.spawn().insert(BuildingSlot(None)).id()),
     };
