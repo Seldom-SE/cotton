@@ -1,14 +1,6 @@
-use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
+use bevy::prelude::*;
 
-use crate::{asset::AssetMap, random::Shuffle, resource::Resource};
-
-pub struct HarborPlugin;
-
-impl Plugin for HarborPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_system(update_harbor_images);
-    }
-}
+use crate::{image::UpdateImages, random::Shuffle, resource::Resource};
 
 #[derive(Clone, Copy)]
 pub enum Harbor {
@@ -41,40 +33,19 @@ impl Shuffle for Option<Harbor> {
     }
 }
 
-impl Harbor {
-    fn image(self) -> &'static str {
-        match self {
-            Self::Resource(Resource::Brick) => "brick_harbor",
-            Self::Resource(Resource::Wool) => "wool_harbor",
-            Self::Resource(Resource::Ore) => "ore_harbor",
-            Self::Resource(Resource::Grain) => "grain_harbor",
-            Self::Resource(Resource::Lumber) => "lumber_harbor",
-            Self::Any => "any_harbor",
-        }
-    }
-}
-
 #[derive(Clone, Component, Copy, Deref)]
 pub struct HarborSlot(pub Option<Harbor>);
 
-fn update_harbor_images(
-    mut commands: Commands,
-    harbors: Query<(Entity, &HarborSlot, &Transform), Added<HarborSlot>>,
-    assets: Res<AssetServer>,
-    mut images: ResMut<AssetMap<Image>>,
-) {
-    for (entity, harbor, transform) in harbors.iter() {
-        commands.entity(entity).insert_bundle(SpriteBundle {
-            transform: *transform,
-            texture: if let Some(harbor) = &**harbor {
-                images.get(&harbor.image().to_string(), &assets)
-            } else {
-                DEFAULT_IMAGE_HANDLE.typed()
-            },
-            visibility: Visibility {
-                is_visible: harbor.is_some(),
-            },
-            ..default()
-        });
+impl UpdateImages for HarborSlot {
+    fn image(self) -> Option<&'static str> {
+        match *self {
+            None => None,
+            Some(Harbor::Resource(Resource::Brick)) => Some("brick_harbor.png"),
+            Some(Harbor::Resource(Resource::Wool)) => Some("wool_harbor.png"),
+            Some(Harbor::Resource(Resource::Ore)) => Some("ore_harbor.png"),
+            Some(Harbor::Resource(Resource::Grain)) => Some("grain_harbor.png"),
+            Some(Harbor::Resource(Resource::Lumber)) => Some("lumber_harbor.png"),
+            Some(Harbor::Any) => Some("any_harbor.png"),
+        }
     }
 }

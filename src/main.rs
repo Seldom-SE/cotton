@@ -1,12 +1,9 @@
 use bevy::prelude::*;
 use board::BoardPlugin;
 use camera::CameraPlugin;
-use harbor::HarborPlugin;
 use image::ImagePlugin;
-use tile::TilePlugin;
 
 mod array;
-mod asset;
 mod board;
 mod building;
 mod camera;
@@ -33,9 +30,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(BoardPlugin)
         .add_plugin(CameraPlugin)
-        .add_plugin(HarborPlugin)
         .add_plugin(ImagePlugin)
-        .add_plugin(TilePlugin)
         .insert_resource(ClearColor(CLEAR_COLOR))
         .run();
 }

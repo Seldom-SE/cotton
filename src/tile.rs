@@ -1,14 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{asset::AssetMap, random::Shuffle};
-
-pub struct TilePlugin;
-
-impl Plugin for TilePlugin {
-    fn build(&self, app: &mut App) {
-        app.add_system(update_tile_images);
-    }
-}
+use crate::{image::UpdateImages, random::Shuffle};
 
 #[derive(Clone, Component, Copy, Debug)]
 pub enum Tile {
@@ -50,30 +42,17 @@ impl Tile {
             Self::Desert => true,
         }
     }
-
-    fn image(self) -> &'static str {
-        match self {
-            Self::Hills => "hills",
-            Self::Pasture => "pasture",
-            Self::Mountains => "mountains",
-            Self::Fields => "fields",
-            Self::Forest => "forest",
-            Self::Desert => "desert",
-        }
-    }
 }
 
-fn update_tile_images(
-    mut commands: Commands,
-    tiles: Query<(Entity, &Tile, &Transform), Added<Tile>>,
-    assets: Res<AssetServer>,
-    mut images: ResMut<AssetMap<Image>>,
-) {
-    for (entity, tile, transform) in tiles.iter() {
-        commands.entity(entity).insert_bundle(SpriteBundle {
-            transform: *transform,
-            texture: images.get(&tile.image().to_string(), &assets),
-            ..default()
-        });
+impl UpdateImages for Tile {
+    fn image(self) -> Option<&'static str> {
+        match self {
+            Self::Hills => Some("hills.png"),
+            Self::Pasture => Some("pasture.png"),
+            Self::Mountains => Some("mountains.png"),
+            Self::Fields => Some("fields.png"),
+            Self::Forest => Some("forest.png"),
+            Self::Desert => Some("desert.png"),
+        }
     }
 }
