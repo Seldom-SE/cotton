@@ -1,12 +1,13 @@
 use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 
-use crate::{harbor::HarborSlot, tile::Tile};
+use crate::{chit::ChitSlot, harbor::HarborSlot, tile::Tile};
 
 pub struct ImagePlugin;
 
 impl Plugin for ImagePlugin {
     fn build(&self, app: &mut App) {
         app.add_system(Tile::update_images)
+            .add_system(ChitSlot::update_images)
             .add_system(HarborSlot::update_images);
     }
 }
