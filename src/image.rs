@@ -1,8 +1,12 @@
 use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 
 use crate::{
-    building::show_building_buttons, button::BuildingButton, chit::ChitSlot, harbor::HarborSlot,
-    robber::RobberSlot, tile::Tile,
+    building::{show_building_buttons, BuildingSlot},
+    button::BuildingButton,
+    chit::ChitSlot,
+    harbor::HarborSlot,
+    robber::RobberSlot,
+    tile::Tile,
 };
 
 pub struct ImagePlugin;
@@ -13,6 +17,7 @@ impl Plugin for ImagePlugin {
             .add_system(ChitSlot::update_images)
             .add_system(RobberSlot::update_images)
             .add_system(HarborSlot::update_images)
+            .add_system(BuildingSlot::update_images)
             .add_system(add_button_image.after(show_building_buttons));
     }
 }

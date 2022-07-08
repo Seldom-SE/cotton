@@ -1,6 +1,9 @@
+#![allow(clippy::type_complexity)]
+
 use bevy::prelude::*;
 use board::BoardPlugin;
 use building::BuildingPlugin;
+use button::ButtonPlugin;
 use camera::CameraPlugin;
 use cursor::CursorPlugin;
 use image::ImagePlugin;
@@ -37,6 +40,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(BoardPlugin)
         .add_plugin(BuildingPlugin)
+        .add_plugin(ButtonPlugin)
         .add_plugin(CameraPlugin)
         .add_plugin(CursorPlugin)
         .add_plugin(ImagePlugin)

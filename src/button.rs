@@ -20,7 +20,7 @@ pub struct BuildingButton;
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
-struct Clicked;
+pub struct Clicked;
 
 enum ButtonType {
     Building,
@@ -56,7 +56,7 @@ fn press_button(
                         left: translation.x - radius,
                         right: translation.x + radius,
                         top: translation.y + radius,
-                        bottom: translation.y + radius,
+                        bottom: translation.y - radius,
                     }
                     .contains(cursor_position))
                     {

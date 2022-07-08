@@ -25,14 +25,14 @@ const HARBOR_COUNT: usize = 30;
 const ROAD_COUNT: usize = 72;
 const BUILDING_COUNT: usize = 54;
 
-struct Board {
-    tiles: [Entity; TILE_COUNT],
-    chits: [Entity; TILE_COUNT],
-    robbers: [Entity; TILE_COUNT],
-    harbors: [Entity; HARBOR_COUNT],
-    roads: [Entity; ROAD_COUNT],
-    buildings: [Entity; BUILDING_COUNT],
-    building_buttons: [Entity; BUILDING_COUNT],
+pub struct Board {
+    pub tiles: [Entity; TILE_COUNT],
+    pub chits: [Entity; TILE_COUNT],
+    pub robbers: [Entity; TILE_COUNT],
+    pub harbors: [Entity; HARBOR_COUNT],
+    pub roads: [Entity; ROAD_COUNT],
+    pub buildings: [Entity; BUILDING_COUNT],
+    pub building_buttons: [Entity; BUILDING_COUNT],
 }
 
 const TILE_POSITIONS: [(f32, f32); TILE_COUNT] = [
@@ -196,7 +196,15 @@ fn generate_board(mut commands: Commands) {
                 .id()
         }),
         roads: [(); ROAD_COUNT].map(|_| commands.spawn().insert(RoadSlot(None)).id()),
-        buildings: [(); BUILDING_COUNT].map(|_| commands.spawn().insert(BuildingSlot(None)).id()),
+        buildings: enumerate([(); BUILDING_COUNT]).map(|(i, _)| {
+            commands
+                .spawn()
+                .insert(BuildingSlot(None))
+                .insert(Transform::from_translation(
+                    Vec2::from(BUILDING_POSITIONS[i]).extend(BUILDING_Z),
+                ))
+                .id()
+        }),
         building_buttons: enumerate([(); BUILDING_COUNT]).map(|(i, _)| {
             commands
                 .spawn()
