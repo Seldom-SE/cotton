@@ -1,6 +1,9 @@
 use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 
-use crate::{chit::ChitSlot, harbor::HarborSlot, robber::RobberSlot, tile::Tile};
+use crate::{
+    building::show_building_buttons, button::BuildingButton, chit::ChitSlot, harbor::HarborSlot,
+    robber::RobberSlot, tile::Tile,
+};
 
 pub struct ImagePlugin;
 
@@ -9,7 +12,8 @@ impl Plugin for ImagePlugin {
         app.add_system(Tile::update_images)
             .add_system(ChitSlot::update_images)
             .add_system(RobberSlot::update_images)
-            .add_system(HarborSlot::update_images);
+            .add_system(HarborSlot::update_images)
+            .add_system(add_button_image.after(show_building_buttons));
     }
 }
 
@@ -36,5 +40,22 @@ pub trait UpdateImages: Component + Copy + Sized {
                 ..default()
             });
         }
+    }
+}
+
+static BUILDING_BUTTON_IMAGE: &str = "building_button.png";
+
+fn add_button_image(
+    mut commands: Commands,
+    building_buttons: Query<(Entity, &Transform, &Visibility), Added<BuildingButton>>,
+    assets: Res<AssetServer>,
+) {
+    for (entity, transform, visibility) in building_buttons.iter() {
+        commands.entity(entity).insert_bundle(SpriteBundle {
+            transform: *transform,
+            texture: assets.load(BUILDING_BUTTON_IMAGE),
+            visibility: visibility.clone(),
+            ..default()
+        });
     }
 }
