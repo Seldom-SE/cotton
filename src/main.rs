@@ -7,6 +7,7 @@ use button::ButtonPlugin;
 use camera::CameraPlugin;
 use cursor::CursorPlugin;
 use image::ImagePlugin;
+use road::RoadPlugin;
 use turn::TurnPlugin;
 
 mod array;
@@ -44,6 +45,7 @@ fn main() {
         .add_plugin(CameraPlugin)
         .add_plugin(CursorPlugin)
         .add_plugin(ImagePlugin)
+        .add_plugin(RoadPlugin)
         .add_plugin(TurnPlugin)
         .insert_resource(ClearColor(CLEAR_COLOR))
         .run();

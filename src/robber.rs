@@ -6,7 +6,7 @@ use crate::image::UpdateImages;
 pub struct RobberSlot(pub bool);
 
 impl UpdateImages for RobberSlot {
-    fn image(self) -> Option<&'static str> {
+    fn image(self, _: usize) -> Option<&'static str> {
         self.then(|| "robber.png")
     }
 }

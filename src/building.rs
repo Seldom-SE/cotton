@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    board::Board,
-    button::{BoardButton, BuildingButton, Clicked},
+    board::{Board, BoardIndex, BUILDING_BUILDING_ADJACENCY},
+    button::{BuildingButton, Clicked},
     color::Color,
     image::UpdateImages,
     turn::{Players, Turn},
@@ -18,22 +18,22 @@ impl Plugin for BuildingPlugin {
 }
 
 #[derive(Clone, Copy)]
-enum BuildingType {
+pub enum BuildingType {
     Settlement,
     City,
 }
 
 #[derive(Clone, Copy)]
 pub struct Building {
-    building_type: BuildingType,
-    color: Color,
+    pub building_type: BuildingType,
+    pub color: Color,
 }
 
 #[derive(Clone, Component, Copy, Deref, DerefMut)]
 pub struct BuildingSlot(pub Option<Building>);
 
 impl UpdateImages for BuildingSlot {
-    fn image(self) -> Option<&'static str> {
+    fn image(self, _: usize) -> Option<&'static str> {
         match *self {
             None => None,
             Some(Building {
@@ -59,13 +59,18 @@ impl UpdateImages for BuildingSlot {
 }
 
 pub fn show_building_buttons(
-    mut buttons: Query<&mut Visibility, With<BuildingButton>>,
+    mut buttons: Query<(&mut Visibility, &BoardIndex), With<BuildingButton>>,
+    buildings: Query<&BuildingSlot>,
+    board: Res<Board>,
     turn: Res<Turn>,
 ) {
     if turn.is_changed() {
         if let Turn::Setup { road: false, .. } = *turn {
-            for mut visibility in buttons.iter_mut() {
-                visibility.is_visible = true;
+            for (mut visibility, index) in buttons.iter_mut() {
+                visibility.is_visible = buildings.get(board.buildings[**index]).unwrap().is_none()
+                    && BUILDING_BUILDING_ADJACENCY[**index].iter().all(|building| {
+                        buildings.get(board.buildings[*building]).unwrap().is_none()
+                    });
             }
         }
     }
@@ -73,7 +78,7 @@ pub fn show_building_buttons(
 
 fn build_settlement(
     mut commands: Commands,
-    mut clicked_buttons: Query<(Entity, &BoardButton), (With<BuildingButton>, With<Clicked>)>,
+    mut clicked_buttons: Query<(Entity, &BoardIndex), (With<BuildingButton>, With<Clicked>)>,
     mut buttons: Query<&mut Visibility, With<BuildingButton>>,
     mut buildings: Query<&mut BuildingSlot>,
     board: Res<Board>,
@@ -86,10 +91,10 @@ fn build_settlement(
         ..
     } = *turn
     {
-        for (entity, button) in clicked_buttons.iter_mut() {
+        for (entity, index) in clicked_buttons.iter_mut() {
             commands.entity(entity).remove::<Clicked>();
 
-            **buildings.get_mut(board.buildings[button.index]).unwrap() = Some(Building {
+            **buildings.get_mut(board.buildings[**index]).unwrap() = Some(Building {
                 building_type: BuildingType::Settlement,
                 color: players[player],
             });

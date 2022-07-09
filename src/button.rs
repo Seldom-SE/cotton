@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{cursor::CursorPosition, math::RectContains};
+use crate::{cursor::CursorPosition, image::ButtonImage, math::RectContains};
 
 pub struct ButtonPlugin;
 
@@ -11,44 +11,66 @@ impl Plugin for ButtonPlugin {
 }
 
 #[derive(Component)]
-pub struct BoardButton {
-    pub index: usize,
+pub struct BuildingButton;
+
+impl ButtonImage for BuildingButton {
+    fn image() -> &'static str {
+        "building_button.png"
+    }
 }
 
 #[derive(Component)]
-pub struct BuildingButton;
+pub struct RoadButton;
+
+impl ButtonImage for RoadButton {
+    fn image() -> &'static str {
+        "building_button.png"
+    }
+}
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct Clicked;
 
-enum ButtonType {
+pub enum ButtonType {
     Building,
+    Road,
 }
 
 const BUILDING_BUTTON_RADIUS: f32 = 16.;
+const ROAD_BUTTON_RADIUS: f32 = 16.;
 
 impl ButtonType {
     fn radius(self) -> f32 {
         match self {
             ButtonType::Building => BUILDING_BUTTON_RADIUS,
+            ButtonType::Road => ROAD_BUTTON_RADIUS,
         }
     }
 }
 
 fn press_button(
     mut commands: Commands,
-    buttons: Query<(Entity, Option<&BuildingButton>, &Transform, &Visibility), With<BoardButton>>,
+    buttons: Query<
+        (
+            Entity,
+            Option<&BuildingButton>,
+            Option<&RoadButton>,
+            &Transform,
+            &Visibility,
+        ),
+        Or<(With<BuildingButton>, With<RoadButton>)>,
+    >,
     cursor_position: Res<CursorPosition>,
     mouse: Res<Input<MouseButton>>,
 ) {
     if let Some(cursor_position) = **cursor_position {
         if mouse.just_pressed(MouseButton::Left) {
-            for (entity, building_button, transform, visibility) in buttons.iter() {
+            for (entity, building_button, road_button, transform, visibility) in buttons.iter() {
                 if visibility.is_visible {
                     let radius = building_button
                         .map(|_| ButtonType::Building)
-                        .unwrap()
+                        .unwrap_or_else(|| road_button.map(|_| ButtonType::Road).unwrap())
                         .radius();
                     let translation = transform.translation;
 

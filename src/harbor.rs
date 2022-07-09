@@ -37,7 +37,7 @@ impl Shuffle for Option<Harbor> {
 pub struct HarborSlot(pub Option<Harbor>);
 
 impl UpdateImages for HarborSlot {
-    fn image(self) -> Option<&'static str> {
+    fn image(self, _: usize) -> Option<&'static str> {
         match *self {
             None => None,
             Some(Harbor::Resource(Resource::Brick)) => Some("brick_harbor.png"),

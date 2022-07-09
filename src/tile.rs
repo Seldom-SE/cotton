@@ -45,7 +45,7 @@ impl Tile {
 }
 
 impl UpdateImages for Tile {
-    fn image(self) -> Option<&'static str> {
+    fn image(self, _: usize) -> Option<&'static str> {
         match self {
             Self::Hills => Some("hills.png"),
             Self::Pasture => Some("pasture.png"),

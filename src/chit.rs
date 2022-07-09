@@ -36,7 +36,7 @@ impl Shuffle for Chit {
 pub struct ChitSlot(pub Option<Chit>);
 
 impl UpdateImages for ChitSlot {
-    fn image(self) -> Option<&'static str> {
+    fn image(self, _: usize) -> Option<&'static str> {
         match *self {
             None => None,
             Some(Chit(2)) => Some("chit_2.png"),

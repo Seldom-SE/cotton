@@ -1,10 +1,12 @@
 use bevy::{prelude::*, render::texture::DEFAULT_IMAGE_HANDLE};
 
 use crate::{
+    board::BoardIndex,
     building::{show_building_buttons, BuildingSlot},
-    button::BuildingButton,
+    button::{BuildingButton, RoadButton},
     chit::ChitSlot,
     harbor::HarborSlot,
+    road::RoadSlot,
     robber::RobberSlot,
     tile::Tile,
 };
@@ -17,20 +19,23 @@ impl Plugin for ImagePlugin {
             .add_system(ChitSlot::update_images)
             .add_system(RobberSlot::update_images)
             .add_system(HarborSlot::update_images)
+            .add_system(RoadSlot::update_images)
             .add_system(BuildingSlot::update_images)
-            .add_system(add_button_image.after(show_building_buttons));
+            .add_system(BuildingButton::add_image.after(show_building_buttons))
+            .add_system(RoadButton::add_image);
     }
 }
 
 pub trait UpdateImages: Component + Copy + Sized {
-    fn image(self) -> Option<&'static str>;
+    fn image(self, index: usize) -> Option<&'static str>;
+
     fn update_images(
         mut commands: Commands,
-        query: Query<(Entity, &Self, &Transform), Changed<Self>>,
+        query: Query<(Entity, &Self, &BoardIndex, &Transform), Changed<Self>>,
         assets: Res<AssetServer>,
     ) {
-        for (entity, component, transform) in query.iter() {
-            let image = component.image();
+        for (entity, component, index, transform) in query.iter() {
+            let image = component.image(**index);
 
             commands.entity(entity).insert_bundle(SpriteBundle {
                 transform: *transform,
@@ -48,19 +53,21 @@ pub trait UpdateImages: Component + Copy + Sized {
     }
 }
 
-static BUILDING_BUTTON_IMAGE: &str = "building_button.png";
+pub trait ButtonImage: Component + Sized {
+    fn image() -> &'static str;
 
-fn add_button_image(
-    mut commands: Commands,
-    building_buttons: Query<(Entity, &Transform, &Visibility), Added<BuildingButton>>,
-    assets: Res<AssetServer>,
-) {
-    for (entity, transform, visibility) in building_buttons.iter() {
-        commands.entity(entity).insert_bundle(SpriteBundle {
-            transform: *transform,
-            texture: assets.load(BUILDING_BUTTON_IMAGE),
-            visibility: visibility.clone(),
-            ..default()
-        });
+    fn add_image(
+        mut commands: Commands,
+        building_buttons: Query<(Entity, &Transform, &Visibility), Added<Self>>,
+        assets: Res<AssetServer>,
+    ) {
+        for (entity, transform, visibility) in building_buttons.iter() {
+            commands.entity(entity).insert_bundle(SpriteBundle {
+                transform: *transform,
+                texture: assets.load(Self::image()),
+                visibility: visibility.clone(),
+                ..default()
+            });
+        }
     }
 }

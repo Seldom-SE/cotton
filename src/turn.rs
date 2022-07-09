@@ -63,7 +63,7 @@ impl Turn {
                 road: true,
             } => Self::Setup {
                 round_2: true,
-                player: 0,
+                player: LAST_PLAYER,
                 road: false,
             },
             Self::Setup {
