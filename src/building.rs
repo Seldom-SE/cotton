@@ -25,6 +25,15 @@ pub enum BuildingType {
     City,
 }
 
+impl BuildingType {
+    pub fn production(self) -> u8 {
+        match self {
+            Self::Settlement => 1,
+            Self::City => 2,
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct Building {
     pub building_type: BuildingType,
@@ -116,7 +125,7 @@ fn build_settlement(
                 visibility.is_visible = false;
             }
 
-            *turn = turn.next();
+            *turn = turn.next(*players);
         }
     }
 }

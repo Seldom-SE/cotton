@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, ui::FocusPolicy};
 
 use crate::{color::PlayerColor, turn::Players};
 
@@ -11,11 +11,15 @@ impl Plugin for UiPlugin {
 }
 
 const FONT_SIZE: f32 = 50.;
+const BUTTON_FONT_SIZE: f32 = 30.;
 
 #[derive(Component)]
 pub struct HandUi {
     pub color: PlayerColor,
 }
+
+#[derive(Component)]
+pub struct NextButton;
 
 fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServer>) {
     commands.spawn_bundle(UiCameraBundle::default());
@@ -67,6 +71,49 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                             })
                             .insert(HandUi { color: player });
                     }
+                });
+
+            parent.spawn_bundle(NodeBundle {
+                style: Style {
+                    size: Size::new(Val::Percent(60.), Val::Auto),
+                    ..default()
+                },
+                color: Color::NONE.into(),
+                ..default()
+            });
+
+            parent
+                .spawn_bundle(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::FlexStart,
+                        size: Size::new(Val::Percent(20.), Val::Percent(100.)),
+                        ..default()
+                    },
+                    color: Color::rgb(0.024, 0., 0.275).into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent
+                        .spawn_bundle(ButtonBundle::default())
+                        .insert(NextButton)
+                        .with_children(|parent| {
+                            parent
+                                .spawn_bundle(TextBundle {
+                                    text: Text::with_section(
+                                        "Next",
+                                        TextStyle {
+                                            font: assets.load("FiraSans-Bold.ttf"),
+                                            font_size: BUTTON_FONT_SIZE,
+                                            color: Color::BLACK,
+                                        },
+                                        default(),
+                                    ),
+                                    focus_policy: FocusPolicy::Pass,
+                                    ..default()
+                                })
+                                .insert(NextButton);
+                        });
                 });
         });
 }

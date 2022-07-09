@@ -1,20 +1,25 @@
 use bevy::prelude::*;
 use rand::{prelude::SliceRandom, thread_rng};
 
-use crate::color::{PlayerColor, COLORS};
+use crate::{
+    color::{PlayerColor, COLORS},
+    ui::NextButton,
+};
 
 pub struct TurnPlugin;
 
 impl Plugin for TurnPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Turn>().init_resource::<Players>();
+        app.init_resource::<Turn>()
+            .init_resource::<Players>()
+            .add_system(press_next_button);
     }
 }
 
 pub const PLAYER_COUNT: usize = 4;
 const LAST_PLAYER: usize = PLAYER_COUNT - 1;
 
-#[derive(Deref)]
+#[derive(Clone, Copy, Deref)]
 pub struct Players([PlayerColor; PLAYER_COUNT]);
 
 impl Default for Players {
@@ -32,6 +37,12 @@ pub enum Turn {
         player: usize,
         road: bool,
     },
+    Production {
+        player: usize,
+    },
+    Build {
+        player: usize,
+    },
     Done,
 }
 
@@ -46,8 +57,8 @@ impl Default for Turn {
 }
 
 impl Turn {
-    pub fn next(self) -> Self {
-        match self {
+    pub fn next(self, players: Players) -> Self {
+        let turn = match self {
             Self::Setup {
                 round_2,
                 player,
@@ -79,7 +90,10 @@ impl Turn {
                 round_2: true,
                 player: 0,
                 road: true,
-            } => Self::Done,
+            }
+            | Self::Build {
+                player: LAST_PLAYER,
+            } => Self::Production { player: 0 },
             Self::Setup {
                 round_2: true,
                 player,
@@ -89,7 +103,47 @@ impl Turn {
                 player: player - 1,
                 road: false,
             },
+            Self::Production { player } => Self::Build { player },
+            Self::Build { player } => Self::Production { player: player + 1 },
             Self::Done => Self::Done,
+        };
+
+        turn.print(players);
+
+        turn
+    }
+
+    fn print(self, players: Players) {
+        match self {
+            Self::Setup {
+                round_2,
+                player,
+                road,
+            } => println!(
+                "Setup round {}: {}, place a {}",
+                if round_2 { 2 } else { 1 },
+                String::from(players[player]),
+                if road { "road" } else { "settlement" }
+            ),
+            Self::Production { player } => {
+                println!("{}: Production", String::from(players[player]))
+            }
+            Self::Build { player } => println!("{}: Build", String::from(players[player])),
+            Self::Done => println!("Game over"),
+        }
+    }
+}
+
+fn press_next_button(
+    buttons: Query<&Interaction, (With<NextButton>, Changed<Interaction>)>,
+    players: Res<Players>,
+    mut turn: ResMut<Turn>,
+) {
+    if let Turn::Build { .. } = *turn {
+        for interaction in buttons.iter() {
+            if let Interaction::Clicked = interaction {
+                *turn = turn.next(*players);
+            }
         }
     }
 }

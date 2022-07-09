@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{image::UpdateImages, random::Shuffle};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Deref)]
 pub struct Chit(u8);
 
 static CHITS: &[Chit] = &[

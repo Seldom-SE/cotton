@@ -1,12 +1,22 @@
 use bevy::prelude::*;
+use rand::{thread_rng, Rng};
 
-use crate::{turn::PLAYER_COUNT, ui::HandUi};
+use crate::{
+    board::{Board, BoardIndex, BUILDING_TILE_ADJACENCY},
+    building::BuildingSlot,
+    chit::ChitSlot,
+    tile::Tile,
+    turn::{Players, Turn, PLAYER_COUNT},
+    ui::HandUi,
+};
 
 pub struct ResourcePlugin;
 
 impl Plugin for ResourcePlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Hands>().add_system(update_hand_ui);
+        app.init_resource::<Hands>()
+            .add_system(update_hand_ui)
+            .add_system(produce_resources);
     }
 }
 
@@ -70,6 +80,42 @@ fn update_hand_ui(
                     }
                 }
             });
+        }
+    }
+}
+
+fn produce_resources(
+    buildings: Query<(&BuildingSlot, &BoardIndex)>,
+    tiles: Query<&Tile>,
+    chits: Query<&ChitSlot>,
+    board: Res<Board>,
+    players: Res<Players>,
+    mut hands: ResMut<Hands>,
+    mut turn: ResMut<Turn>,
+) {
+    if turn.is_changed() {
+        if let Turn::Production { .. } = *turn {
+            let mut rng = thread_rng();
+            let roll = rng.gen_range(1..=6) + rng.gen_range(1..=6);
+
+            println!("Rolled a {roll}");
+
+            for (building, index) in buildings.iter() {
+                if let Some(building) = **building {
+                    let hand = &mut hands[building.color as usize];
+
+                    for tile in BUILDING_TILE_ADJACENCY[**index] {
+                        if let Some(chit) = **chits.get(board.chits[*tile]).unwrap() {
+                            if roll == *chit {
+                                hand[tiles.get(board.tiles[*tile]).unwrap().resource().unwrap()
+                                    as usize] += building.building_type.production();
+                            }
+                        }
+                    }
+                }
+            }
+
+            *turn = turn.next(*players);
         }
     }
 }

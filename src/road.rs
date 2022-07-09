@@ -128,7 +128,7 @@ fn build_road(
                 visibility.is_visible = false;
             }
 
-            *turn = turn.next();
+            *turn = turn.next(*players);
         }
     }
 }
