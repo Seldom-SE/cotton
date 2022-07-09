@@ -1,4 +1,4 @@
-#![allow(clippy::type_complexity)]
+#![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
 use bevy::prelude::*;
 use board::BoardPlugin;
@@ -7,8 +7,10 @@ use button::ButtonPlugin;
 use camera::CameraPlugin;
 use cursor::CursorPlugin;
 use image::ImagePlugin;
+use resource::ResourcePlugin;
 use road::RoadPlugin;
 use turn::TurnPlugin;
+use ui::UiPlugin;
 
 mod array;
 mod board;
@@ -28,6 +30,7 @@ mod road;
 mod robber;
 mod tile;
 mod turn;
+mod ui;
 
 static TITLE: &str = "Cotton";
 const CLEAR_COLOR: Color = Color::rgb(0.114, 0.281, 0.846);
@@ -45,8 +48,10 @@ fn main() {
         .add_plugin(CameraPlugin)
         .add_plugin(CursorPlugin)
         .add_plugin(ImagePlugin)
+        .add_plugin(ResourcePlugin)
         .add_plugin(RoadPlugin)
         .add_plugin(TurnPlugin)
+        .add_plugin(UiPlugin)
         .insert_resource(ClearColor(CLEAR_COLOR))
         .run();
 }

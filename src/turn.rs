@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::{prelude::SliceRandom, thread_rng};
 
-use crate::color::{Color, COLORS};
+use crate::color::{PlayerColor, COLORS};
 
 pub struct TurnPlugin;
 
@@ -11,11 +11,11 @@ impl Plugin for TurnPlugin {
     }
 }
 
-const PLAYER_COUNT: usize = 4;
+pub const PLAYER_COUNT: usize = 4;
 const LAST_PLAYER: usize = PLAYER_COUNT - 1;
 
 #[derive(Deref)]
-pub struct Players([Color; PLAYER_COUNT]);
+pub struct Players([PlayerColor; PLAYER_COUNT]);
 
 impl Default for Players {
     fn default() -> Self {

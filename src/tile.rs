@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{image::UpdateImages, random::Shuffle};
+use crate::{image::UpdateImages, random::Shuffle, resource::Resource};
 
 #[derive(Clone, Component, Copy, Debug)]
 pub enum Tile {
@@ -36,6 +36,17 @@ impl Shuffle for Tile {
 }
 
 impl Tile {
+    pub fn resource(self) -> Option<Resource> {
+        match self {
+            Self::Hills => Some(Resource::Brick),
+            Self::Pasture => Some(Resource::Wool),
+            Self::Mountains => Some(Resource::Ore),
+            Self::Fields => Some(Resource::Grain),
+            Self::Forest => Some(Resource::Lumber),
+            Self::Desert => None,
+        }
+    }
+
     pub fn robber_home(self) -> bool {
         match self {
             Self::Hills | Self::Pasture | Self::Mountains | Self::Fields | Self::Forest => false,

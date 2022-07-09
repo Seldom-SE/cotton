@@ -6,7 +6,7 @@ use crate::{
     },
     building::BuildingSlot,
     button::{Clicked, RoadButton},
-    color::Color,
+    color::PlayerColor,
     image::UpdateImages,
     turn::{Players, Turn},
 };
@@ -28,7 +28,7 @@ pub enum RoadOrientation {
 
 #[derive(Clone, Copy)]
 pub struct Road {
-    color: Color,
+    color: PlayerColor,
 }
 
 #[derive(Clone, Component, Copy, Deref, DerefMut)]
@@ -39,25 +39,29 @@ impl UpdateImages for RoadSlot {
         let orientation = ROAD_ORIENTATIONS[index];
         match *self {
             None => None,
-            Some(Road { color: Color::Blue }) => Some(match orientation {
+            Some(Road {
+                color: PlayerColor::Blue,
+            }) => Some(match orientation {
                 RoadOrientation::Inc => "blue_inc_road.png",
                 RoadOrientation::Dec => "blue_dec_road.png",
                 RoadOrientation::Vert => "blue_vert_road.png",
             }),
             Some(Road {
-                color: Color::Orange,
+                color: PlayerColor::Orange,
             }) => Some(match orientation {
                 RoadOrientation::Inc => "orange_inc_road.png",
                 RoadOrientation::Dec => "orange_dec_road.png",
                 RoadOrientation::Vert => "orange_vert_road.png",
             }),
-            Some(Road { color: Color::Red }) => Some(match orientation {
+            Some(Road {
+                color: PlayerColor::Red,
+            }) => Some(match orientation {
                 RoadOrientation::Inc => "red_inc_road.png",
                 RoadOrientation::Dec => "red_dec_road.png",
                 RoadOrientation::Vert => "red_vert_road.png",
             }),
             Some(Road {
-                color: Color::White,
+                color: PlayerColor::White,
             }) => Some(match orientation {
                 RoadOrientation::Inc => "white_inc_road.png",
                 RoadOrientation::Dec => "white_dec_road.png",
