@@ -31,7 +31,7 @@ pub enum RoadOrientation {
 
 #[derive(Clone, Copy)]
 pub struct Road {
-    color: PlayerColor,
+    pub color: PlayerColor,
 }
 
 #[derive(Clone, Component, Copy, Deref, DerefMut)]

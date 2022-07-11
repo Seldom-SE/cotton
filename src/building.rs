@@ -1,13 +1,18 @@
 use bevy::prelude::*;
 
 use crate::{
-    board::{Board, BoardIndex, BUILDING_BUILDING_ADJACENCY, BUILDING_TILE_ADJACENCY},
+    board::{
+        Board, BoardIndex, BUILDING_BUILDING_ADJACENCY, BUILDING_ROAD_ADJACENCY,
+        BUILDING_TILE_ADJACENCY,
+    },
     button::{BuildingButton, Clicked},
     color::PlayerColor,
     image::UpdateImages,
-    resource::Hands,
+    resource::{Hands, Resource},
+    road::RoadSlot,
     tile::Tile,
     turn::{Players, Turn},
+    ui::BuildSettlementButton,
 };
 
 pub struct BuildingPlugin;
@@ -71,18 +76,65 @@ impl UpdateImages for BuildingSlot {
 
 pub fn show_building_buttons(
     mut buttons: Query<(&mut Visibility, &BoardIndex), With<BuildingButton>>,
+    build_buttons: Query<&Interaction, (With<BuildSettlementButton>, Changed<Interaction>)>,
     buildings: Query<&BuildingSlot>,
+    roads: Query<&RoadSlot>,
     board: Res<Board>,
-    turn: Res<Turn>,
+    players: Res<Players>,
+    mut hands: ResMut<Hands>,
+    mut turn: ResMut<Turn>,
 ) {
-    if turn.is_changed() {
-        if let Turn::Setup { road: false, .. } = *turn {
-            for (mut visibility, index) in buttons.iter_mut() {
-                visibility.is_visible = buildings.get(board.buildings[**index]).unwrap().is_none()
-                    && BUILDING_BUILDING_ADJACENCY[**index].iter().all(|building| {
-                        buildings.get(board.buildings[*building]).unwrap().is_none()
-                    });
+    if let Some((player, setup)) = match *turn {
+        Turn::Setup {
+            player,
+            road: false,
+            ..
+        } => turn.is_changed().then(|| (player, true)),
+        Turn::Build { player } => build_buttons.get_single().ok().and_then(|interaction| {
+            if let Interaction::Clicked = interaction {
+                let hand = hands[players[player] as usize];
+
+                (hand[Resource::Brick as usize] >= 1
+                    && hand[Resource::Wool as usize] >= 1
+                    && hand[Resource::Grain as usize] >= 1
+                    && hand[Resource::Lumber as usize] >= 1)
+                    .then(|| (player, false))
+            } else {
+                None
             }
+        }),
+        _ => None,
+    } {
+        let mut can_build = false;
+        let color = players[player];
+
+        for (mut visibility, index) in buttons.iter_mut() {
+            let visible = (setup
+                || buildings.get(board.buildings[**index]).unwrap().is_none()
+                    && BUILDING_ROAD_ADJACENCY[**index].iter().any(|road| {
+                        roads
+                            .get(board.roads[*road])
+                            .unwrap()
+                            .map_or(false, |road| color == road.color)
+                    }))
+                && buildings.get(board.buildings[**index]).unwrap().is_none()
+                && BUILDING_BUILDING_ADJACENCY[**index]
+                    .iter()
+                    .all(|building| buildings.get(board.buildings[*building]).unwrap().is_none());
+
+            visibility.is_visible = visible;
+            can_build |= visible;
+        }
+
+        if can_build && !setup {
+            let hand = &mut hands[color as usize];
+
+            hand[Resource::Brick as usize] -= 1;
+            hand[Resource::Wool as usize] -= 1;
+            hand[Resource::Grain as usize] -= 1;
+            hand[Resource::Lumber as usize] -= 1;
+
+            *turn = Turn::BuildSettlement { player };
         }
     }
 }
@@ -98,12 +150,15 @@ fn build_settlement(
     mut turn: ResMut<Turn>,
     mut hands: ResMut<Hands>,
 ) {
-    if let Turn::Setup {
-        round_2,
-        player,
-        road: false,
-    } = *turn
-    {
+    if let Some((round_2, player)) = match *turn {
+        Turn::Setup {
+            round_2,
+            player,
+            road: false,
+        } => Some((round_2, player)),
+        Turn::BuildSettlement { player } => Some((false, player)),
+        _ => None,
+    } {
         for (entity, index) in clicked_buttons.iter_mut() {
             commands.entity(entity).remove::<Clicked>();
 

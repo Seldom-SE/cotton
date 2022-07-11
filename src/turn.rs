@@ -46,6 +46,9 @@ pub enum Turn {
     BuildRoad {
         player: usize,
     },
+    BuildSettlement {
+        player: usize,
+    },
     Done,
 }
 
@@ -109,6 +112,7 @@ impl Turn {
             Self::Production { player } => Self::Build { player },
             Self::Build { player } => Self::Production { player: player + 1 },
             Self::BuildRoad { player } => Self::Build { player },
+            Self::BuildSettlement { player } => Self::Build { player },
             Self::Done => Self::Done,
         };
 
@@ -135,6 +139,9 @@ impl Turn {
             Self::Build { player } => println!("{}: Build", String::from(players[player])),
             Self::BuildRoad { player } => {
                 println!("{}: Build a road", String::from(players[player]))
+            }
+            Self::BuildSettlement { player } => {
+                println!("{}: Build a settlement", String::from(players[player]))
             }
             Self::Done => println!("Game over"),
         }
