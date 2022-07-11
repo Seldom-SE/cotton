@@ -3,12 +3,15 @@ use bevy::prelude::*;
 use crate::{
     board::{
         Board, BoardIndex, BUILDING_ROAD_ADJACENCY, ROAD_BUILDING_ADJACENCY, ROAD_ORIENTATIONS,
+        ROAD_ROAD_ADJACENCY,
     },
     building::BuildingSlot,
     button::{Clicked, RoadButton},
     color::PlayerColor,
     image::UpdateImages,
+    resource::{Hands, Resource},
     turn::{Players, Turn},
+    ui::BuildRoadButton,
 };
 
 pub struct RoadPlugin;
@@ -73,33 +76,68 @@ impl UpdateImages for RoadSlot {
 
 pub fn show_road_buttons(
     mut buttons: Query<(&mut Visibility, &BoardIndex), With<RoadButton>>,
+    build_buttons: Query<&Interaction, (With<BuildRoadButton>, Changed<Interaction>)>,
     buildings: Query<&BuildingSlot>,
     roads: Query<&RoadSlot>,
     board: Res<Board>,
     players: Res<Players>,
-    turn: Res<Turn>,
+    mut turn: ResMut<Turn>,
+    mut hands: ResMut<Hands>,
 ) {
-    if turn.is_changed() {
-        if let Turn::Setup {
+    if let Some((player, setup)) = match *turn {
+        Turn::Setup {
             player, road: true, ..
-        } = *turn
-        {
-            for (mut visibility, index) in buttons.iter_mut() {
-                let player = players[player];
-                visibility.is_visible =
-                    ROAD_BUILDING_ADJACENCY[**index]
-                        .into_iter()
-                        .any(|building| {
-                            buildings
-                                .get(board.buildings[building])
-                                .unwrap()
-                                .map(|building| building.color == player)
-                                .unwrap_or(false)
-                                && BUILDING_ROAD_ADJACENCY[building]
-                                    .iter()
-                                    .all(|road| roads.get(board.roads[*road]).unwrap().is_none())
-                        });
+        } => turn.is_changed().then(|| (player, true)),
+        Turn::Build { player } => build_buttons.get_single().ok().and_then(|interaction| {
+            if let Interaction::Clicked = interaction {
+                let hand = hands[players[player] as usize];
+
+                (hand[Resource::Brick as usize] >= 1 && hand[Resource::Lumber as usize] >= 1)
+                    .then(|| (player, false))
+            } else {
+                None
             }
+        }),
+        _ => None,
+    } {
+        let mut can_build = false;
+        let color = players[player];
+
+        for (mut visibility, index) in buttons.iter_mut() {
+            let visible = if setup {
+                ROAD_BUILDING_ADJACENCY[**index]
+                    .into_iter()
+                    .any(|building| {
+                        buildings
+                            .get(board.buildings[building])
+                            .unwrap()
+                            .map(|building| building.color == color)
+                            .unwrap_or(false)
+                            && BUILDING_ROAD_ADJACENCY[building]
+                                .iter()
+                                .all(|road| roads.get(board.roads[*road]).unwrap().is_none())
+                    })
+            } else {
+                roads.get(board.roads[**index]).unwrap().is_none()
+                    && ROAD_ROAD_ADJACENCY[**index].iter().any(|road| {
+                        roads
+                            .get(board.roads[*road])
+                            .unwrap()
+                            .map_or(false, |road| color == road.color)
+                    })
+            };
+
+            visibility.is_visible = visible;
+            can_build |= visible;
+        }
+
+        if can_build && !setup {
+            let hand = &mut hands[color as usize];
+
+            hand[Resource::Brick as usize] -= 1;
+            hand[Resource::Lumber as usize] -= 1;
+
+            *turn = Turn::BuildRoad { player };
         }
     }
 }
@@ -115,7 +153,8 @@ fn build_road(
 ) {
     if let Turn::Setup {
         player, road: true, ..
-    } = *turn
+    }
+    | Turn::BuildRoad { player } = *turn
     {
         for (entity, index) in clicked_buttons.iter_mut() {
             commands.entity(entity).remove::<Clicked>();

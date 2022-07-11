@@ -21,6 +21,9 @@ pub struct HandUi {
 #[derive(Component)]
 pub struct NextButton;
 
+#[derive(Component)]
+pub struct BuildRoadButton;
+
 fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServer>) {
     commands.spawn_bundle(UiCameraBundle::default());
 
@@ -98,21 +101,38 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                         .spawn_bundle(ButtonBundle::default())
                         .insert(NextButton)
                         .with_children(|parent| {
-                            parent
-                                .spawn_bundle(TextBundle {
-                                    text: Text::with_section(
-                                        "Next",
-                                        TextStyle {
-                                            font: assets.load("FiraSans-Bold.ttf"),
-                                            font_size: BUTTON_FONT_SIZE,
-                                            color: Color::BLACK,
-                                        },
-                                        default(),
-                                    ),
-                                    focus_policy: FocusPolicy::Pass,
-                                    ..default()
-                                })
-                                .insert(NextButton);
+                            parent.spawn_bundle(TextBundle {
+                                text: Text::with_section(
+                                    "Next",
+                                    TextStyle {
+                                        font: assets.load("FiraSans-Bold.ttf"),
+                                        font_size: BUTTON_FONT_SIZE,
+                                        color: Color::BLACK,
+                                    },
+                                    default(),
+                                ),
+                                focus_policy: FocusPolicy::Pass,
+                                ..default()
+                            });
+                        });
+
+                    parent
+                        .spawn_bundle(ButtonBundle::default())
+                        .insert(BuildRoadButton)
+                        .with_children(|parent| {
+                            parent.spawn_bundle(TextBundle {
+                                text: Text::with_section(
+                                    "Build road",
+                                    TextStyle {
+                                        font: assets.load("FiraSans-Bold.ttf"),
+                                        font_size: BUTTON_FONT_SIZE,
+                                        color: Color::BLACK,
+                                    },
+                                    default(),
+                                ),
+                                focus_policy: FocusPolicy::Pass,
+                                ..default()
+                            });
                         });
                 });
         });
