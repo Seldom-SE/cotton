@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+/// Adds a function that checks whether I contain a point
 pub trait RectContains {
     fn contains(self, point: Vec2) -> bool;
 }

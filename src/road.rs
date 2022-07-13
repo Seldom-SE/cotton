@@ -22,10 +22,14 @@ impl Plugin for RoadPlugin {
     }
 }
 
+/// Represents the direction a road faces
 #[derive(Clone, Copy)]
 pub enum RoadOrientation {
+    /// The road connects the bottom left and top right, like an increasing line
     Inc,
+    /// The road connects the top left and bottom right, like a decreasing line
     Dec,
+    /// The road connects the top and bottom: a vertical line
     Vert,
 }
 
@@ -74,8 +78,10 @@ impl UpdateImages for RoadSlot {
     }
 }
 
+/// Show the buttons that appear when building roads
 pub fn show_road_buttons(
     mut buttons: Query<(&mut Visibility, &BoardIndex), With<RoadButton>>,
+    // This query is for the UI button that enters build mode
     build_buttons: Query<&Interaction, (With<BuildRoadButton>, Changed<Interaction>)>,
     buildings: Query<&BuildingSlot>,
     roads: Query<&RoadSlot>,
@@ -85,9 +91,13 @@ pub fn show_road_buttons(
     mut hands: ResMut<Hands>,
 ) {
     if let Some((player, setup)) = match *turn {
+        // We're in a road-building phase of a setup round
+        // Show the buttons if we've just entered the phase
         Turn::Setup {
             player, road: true, ..
         } => turn.is_changed().then(|| (player, true)),
+        // We're in a build phase
+        // Show the buttons if the player pressed the button to build, and has enough resources
         Turn::Build { player } => build_buttons.get_single().ok().and_then(|interaction| {
             if let Interaction::Clicked = interaction {
                 let hand = hands[players[player] as usize];
@@ -105,6 +115,8 @@ pub fn show_road_buttons(
 
         for (mut visibility, index) in buttons.iter_mut() {
             let visible = if setup {
+                // We're in a setup phase
+                // The player must build a road here if it's next to the building of their color that isn't next to any roads
                 ROAD_BUILDING_ADJACENCY[**index]
                     .into_iter()
                     .any(|building| {
@@ -118,6 +130,8 @@ pub fn show_road_buttons(
                                 .all(|road| roads.get(board.roads[*road]).unwrap().is_none())
                     })
             } else {
+                // We're in a build phase
+                // The player may build a road here if it's adjacent to another road of the same color
                 roads.get(board.roads[**index]).unwrap().is_none()
                     && ROAD_ROAD_ADJACENCY[**index].iter().any(|road| {
                         roads
@@ -131,6 +145,7 @@ pub fn show_road_buttons(
             can_build |= visible;
         }
 
+        // If they aren't in setup, they should be charged for the build
         if can_build && !setup {
             let hand = &mut hands[color as usize];
 
@@ -142,6 +157,7 @@ pub fn show_road_buttons(
     }
 }
 
+/// Build a road
 fn build_road(
     mut commands: Commands,
     mut clicked_buttons: Query<(Entity, &BoardIndex), (With<RoadButton>, With<Clicked>)>,
@@ -151,9 +167,11 @@ fn build_road(
     players: Res<Players>,
     mut turn: ResMut<Turn>,
 ) {
+    // We're in a road-building phase of a setup round
     if let Turn::Setup {
         player, road: true, ..
     }
+    // We're building a road because the player pressed the Build road button
     | Turn::BuildRoad { player } = *turn
     {
         for (entity, index) in clicked_buttons.iter_mut() {

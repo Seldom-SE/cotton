@@ -12,6 +12,7 @@ use road::RoadPlugin;
 use turn::TurnPlugin;
 use ui::UiPlugin;
 
+// The greatest project structure known to man /s
 mod array;
 mod board;
 mod building;
@@ -32,6 +33,7 @@ mod tile;
 mod turn;
 mod ui;
 
+// Completely original title
 static TITLE: &str = "Cotton";
 const CLEAR_COLOR: Color = Color::rgb(0.114, 0.281, 0.846);
 

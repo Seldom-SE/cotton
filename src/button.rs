@@ -10,6 +10,7 @@ impl Plugin for ButtonPlugin {
     }
 }
 
+/// Buttons that appear on the nodes of the board, for building settlements and cities
 #[derive(Component)]
 pub struct BuildingButton;
 
@@ -19,6 +20,7 @@ impl ButtonImage for BuildingButton {
     }
 }
 
+/// Buttons that appear on the edges of the board, for building roads
 #[derive(Component)]
 pub struct RoadButton;
 
@@ -28,6 +30,7 @@ impl ButtonImage for RoadButton {
     }
 }
 
+/// Used on non-UI buttons
 #[derive(Component)]
 #[component(storage = "SparseSet")]
 pub struct Clicked;
@@ -37,6 +40,7 @@ pub enum ButtonType {
     Road,
 }
 
+// These are radii for, uh, squares
 const BUILDING_BUTTON_RADIUS: f32 = 16.;
 const ROAD_BUTTON_RADIUS: f32 = 16.;
 
@@ -49,6 +53,7 @@ impl ButtonType {
     }
 }
 
+/// Add `Clicked` component to buttons that were just clicked
 fn press_button(
     mut commands: Commands,
     buttons: Query<
@@ -68,6 +73,7 @@ fn press_button(
         if mouse.just_pressed(MouseButton::Left) {
             for (entity, building_button, road_button, transform, visibility) in buttons.iter() {
                 if visibility.is_visible {
+                    // Figure out what button type we're using, and get the radius
                     let radius = building_button
                         .map(|_| ButtonType::Building)
                         .unwrap_or_else(|| road_button.map(|_| ButtonType::Road).unwrap())

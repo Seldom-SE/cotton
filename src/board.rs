@@ -36,9 +36,12 @@ pub struct Board {
     pub building_buttons: [Entity; BUILDING_COUNT],
 }
 
+/// Added to board items (ex. `Tile`s, `RoadSlot`s).
+/// Represents an index that identifies which item it is specifically,
 #[derive(Component, Deref)]
 pub struct BoardIndex(usize);
 
+/// Maps a tile's board index to its position
 const TILE_POSITIONS: [(f32, f32); TILE_COUNT] = [
     (-110., 190.),
     (0., 190.),
@@ -61,6 +64,7 @@ const TILE_POSITIONS: [(f32, f32); TILE_COUNT] = [
     (110., -190.),
 ];
 
+/// Maps a harbor's board index to its position
 const HARBOR_POSITIONS: [(f32, f32); HARBOR_COUNT] = [
     (-151.25, 261.25),
     (-68.75, 261.25),
@@ -94,6 +98,7 @@ const HARBOR_POSITIONS: [(f32, f32); HARBOR_COUNT] = [
     (-192.5, 190.),
 ];
 
+/// Maps a road's board index to its position
 const ROAD_POSITIONS: [(f32, f32); ROAD_COUNT] = [
     (-137.5, 237.5),
     (-82.5, 237.5),
@@ -169,6 +174,7 @@ const ROAD_POSITIONS: [(f32, f32); ROAD_COUNT] = [
     (137.5, -237.5),
 ];
 
+/// Maps a road's board index to its visual orientation
 pub const ROAD_ORIENTATIONS: [RoadOrientation; ROAD_COUNT] = [
     RoadOrientation::Inc,
     RoadOrientation::Dec,
@@ -244,6 +250,7 @@ pub const ROAD_ORIENTATIONS: [RoadOrientation; ROAD_COUNT] = [
     RoadOrientation::Inc,
 ];
 
+/// Maps a road's board index to the board indices of adjacent roads
 pub const ROAD_ROAD_ADJACENCY: [&[usize]; ROAD_COUNT] = [
     &[1, 6],
     &[0, 2, 7],
@@ -319,6 +326,7 @@ pub const ROAD_ROAD_ADJACENCY: [&[usize]; ROAD_COUNT] = [
     &[65, 70],
 ];
 
+/// Maps a road's board index to the board indices of adjacent buildings
 pub const ROAD_BUILDING_ADJACENCY: [[usize; 2]; ROAD_COUNT] = [
     [0, 1],
     [1, 2],
@@ -394,6 +402,7 @@ pub const ROAD_BUILDING_ADJACENCY: [[usize; 2]; ROAD_COUNT] = [
     [52, 53],
 ];
 
+/// Maps a building's board index to its position
 const BUILDING_POSITIONS: [(f32, f32); BUILDING_COUNT] = [
     (-165., 222.),
     (-110., 253.),
@@ -451,6 +460,7 @@ const BUILDING_POSITIONS: [(f32, f32); BUILDING_COUNT] = [
     (165., -222.),
 ];
 
+/// Maps a building's board index to the board indices of adjacent tiles
 pub const BUILDING_TILE_ADJACENCY: [&[usize]; BUILDING_COUNT] = [
     &[0],
     &[0],
@@ -508,6 +518,7 @@ pub const BUILDING_TILE_ADJACENCY: [&[usize]; BUILDING_COUNT] = [
     &[18],
 ];
 
+/// Maps a building's board index to the board indices of adjacent roads
 pub const BUILDING_ROAD_ADJACENCY: [&[usize]; BUILDING_COUNT] = [
     &[0, 6],
     &[0, 1],
@@ -565,6 +576,7 @@ pub const BUILDING_ROAD_ADJACENCY: [&[usize]; BUILDING_COUNT] = [
     &[65, 71],
 ];
 
+/// Maps a building's board index to the board indices of adjacent buildings
 pub const BUILDING_BUILDING_ADJACENCY: [&[usize]; BUILDING_COUNT] = [
     &[1, 8],
     &[0, 2],
@@ -633,6 +645,7 @@ const BUILDING_Z: f32 = 1.;
 fn generate_board(mut commands: Commands) {
     let tiles = Tile::shuffle();
 
+    // The `enumerate` calls here are used to generate board indices
     let board = Board {
         tiles: enumerate(tiles).map(|(i, tile)| {
             commands

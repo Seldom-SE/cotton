@@ -12,6 +12,7 @@ pub enum Tile {
     Desert,
 }
 
+/// Every `Tile` variant
 static TILES: &[Tile] = &[
     Tile::Hills,
     Tile::Pasture,
@@ -36,6 +37,7 @@ impl Shuffle for Tile {
 }
 
 impl Tile {
+    /// What resource (if any) does this tile produce?
     pub fn resource(self) -> Option<Resource> {
         match self {
             Self::Hills => Some(Resource::Brick),
@@ -47,6 +49,7 @@ impl Tile {
         }
     }
 
+    /// Does the robber spawn here?
     pub fn robber_home(self) -> bool {
         match self {
             Self::Hills | Self::Pasture | Self::Mountains | Self::Fields | Self::Forest => false,

@@ -31,6 +31,7 @@ pub enum BuildingType {
 }
 
 impl BuildingType {
+    /// Multiplier on resource production
     pub fn production(self) -> u8 {
         match self {
             Self::Settlement => 1,
@@ -74,8 +75,10 @@ impl UpdateImages for BuildingSlot {
     }
 }
 
+/// Show the buttons that appear when building settlements or cities
 pub fn show_building_buttons(
     mut buttons: Query<(&mut Visibility, &BoardIndex), With<BuildingButton>>,
+    // This query is for the UI button that enters build mode
     build_buttons: Query<&Interaction, (With<BuildSettlementButton>, Changed<Interaction>)>,
     buildings: Query<&BuildingSlot>,
     roads: Query<&RoadSlot>,
@@ -85,11 +88,15 @@ pub fn show_building_buttons(
     mut turn: ResMut<Turn>,
 ) {
     if let Some((player, setup)) = match *turn {
+        // We're in a settlement-building phase of a setup round
+        // Show the buttons if we've just entered the phase
         Turn::Setup {
             player,
             road: false,
             ..
         } => turn.is_changed().then(|| (player, true)),
+        // We're in a build phase
+        // Show the buttons if the player pressed the button to build, and has enough resources
         Turn::Build { player } => build_buttons.get_single().ok().and_then(|interaction| {
             if let Interaction::Clicked = interaction {
                 let hand = hands[players[player] as usize];
@@ -109,14 +116,16 @@ pub fn show_building_buttons(
         let color = players[player];
 
         for (mut visibility, index) in buttons.iter_mut() {
+            // The player may build a settlement here if it's next to that player's road,
+            // there are no buildings here, and there are no adjacent roads.
+            // The first criterion is relaxed in the setup phase.
             let visible = (setup
-                || buildings.get(board.buildings[**index]).unwrap().is_none()
-                    && BUILDING_ROAD_ADJACENCY[**index].iter().any(|road| {
-                        roads
-                            .get(board.roads[*road])
-                            .unwrap()
-                            .map_or(false, |road| color == road.color)
-                    }))
+                || BUILDING_ROAD_ADJACENCY[**index].iter().any(|road| {
+                    roads
+                        .get(board.roads[*road])
+                        .unwrap()
+                        .map_or(false, |road| color == road.color)
+                }))
                 && buildings.get(board.buildings[**index]).unwrap().is_none()
                 && BUILDING_BUILDING_ADJACENCY[**index]
                     .iter()
@@ -126,6 +135,7 @@ pub fn show_building_buttons(
             can_build |= visible;
         }
 
+        // If they aren't in setup, they should be charged for the build
         if can_build && !setup {
             let hand = &mut hands[color as usize];
 
@@ -139,9 +149,10 @@ pub fn show_building_buttons(
     }
 }
 
+/// Build a settlement
 fn build_settlement(
     mut commands: Commands,
-    mut clicked_buttons: Query<(Entity, &BoardIndex), (With<BuildingButton>, With<Clicked>)>,
+    clicked_buttons: Query<(Entity, &BoardIndex), (With<BuildingButton>, With<Clicked>)>,
     mut buttons: Query<&mut Visibility, With<BuildingButton>>,
     mut buildings: Query<&mut BuildingSlot>,
     tiles: Query<&Tile>,
@@ -151,24 +162,29 @@ fn build_settlement(
     mut hands: ResMut<Hands>,
 ) {
     if let Some((round_2, player)) = match *turn {
+        // We're in a settlement-building phase of a setup round
         Turn::Setup {
             round_2,
             player,
             road: false,
         } => Some((round_2, player)),
+        // We're building a settlement because the player pressed the Build settlement button
         Turn::BuildSettlement { player } => Some((false, player)),
         _ => None,
     } {
-        for (entity, index) in clicked_buttons.iter_mut() {
+        for (entity, index) in clicked_buttons.iter() {
+            let color = players[player];
+
             commands.entity(entity).remove::<Clicked>();
 
             **buildings.get_mut(board.buildings[**index]).unwrap() = Some(Building {
                 building_type: BuildingType::Settlement,
-                color: players[player],
+                color,
             });
 
+            // In round 2 of setup, the player is given resources based on the tiles they started adjacent to
             if round_2 {
-                let hand = &mut hands[players[player] as usize];
+                let hand = &mut hands[color as usize];
                 for tile in BUILDING_TILE_ADJACENCY[**index] {
                     if let Some(resource) = tiles.get(board.tiles[*tile]).unwrap().resource() {
                         hand[resource as usize] += 1;

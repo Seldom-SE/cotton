@@ -2,9 +2,11 @@ use bevy::prelude::*;
 
 use crate::{image::UpdateImages, random::Shuffle};
 
+/// This is the little circular chip that's on the resource-producing tiles
 #[derive(Clone, Copy, Deref)]
 pub struct Chit(u8);
 
+/// Every valid `Chit` variant
 static CHITS: &[Chit] = &[
     Chit(2),
     Chit(3),

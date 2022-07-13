@@ -10,4 +10,5 @@ impl Plugin for CameraPlugin {
 
 fn init_camera(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(UiCameraBundle::default());
 }

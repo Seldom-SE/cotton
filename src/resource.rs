@@ -43,6 +43,7 @@ impl Resource {
 
 const RESOURCE_COUNT: usize = 5;
 
+/// Indexed by a `PlayerColor as usize`, and then a `Resource as usize`
 #[derive(Default, Deref, DerefMut)]
 pub struct Hands([[u8; RESOURCE_COUNT]; PLAYER_COUNT]);
 
@@ -55,6 +56,7 @@ const RESOURCES: [Resource; RESOURCE_COUNT] = [
 ];
 const RESOURCE_SIZE: Val = Val::Px(32.);
 
+/// When a player's hand changes, update the hand in the UI
 fn update_hand_ui(
     mut commands: Commands,
     hand_uis: Query<(Entity, &HandUi)>,
@@ -84,6 +86,7 @@ fn update_hand_ui(
     }
 }
 
+/// Roll the dice and give the players their resources
 fn produce_resources(
     buildings: Query<(&BuildingSlot, &BoardIndex)>,
     tiles: Query<&Tile>,

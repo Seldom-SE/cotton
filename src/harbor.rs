@@ -8,7 +8,7 @@ pub enum Harbor {
     Any,
 }
 
-// Array of every `Option<Harbor>` type
+/// Every `Option<Harbor>` variant
 static HARBORS: &[Option<Harbor>] = &[
     None,
     Some(Harbor::Resource(Resource::Brick)),

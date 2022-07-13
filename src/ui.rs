@@ -10,9 +10,7 @@ impl Plugin for UiPlugin {
     }
 }
 
-const FONT_SIZE: f32 = 50.;
-const BUTTON_FONT_SIZE: f32 = 30.;
-
+/// Marks an entity as displaying what resources a player has, via children
 #[derive(Component)]
 pub struct HandUi {
     pub color: PlayerColor,
@@ -27,9 +25,12 @@ pub struct BuildRoadButton;
 #[derive(Component)]
 pub struct BuildSettlementButton;
 
-fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServer>) {
-    commands.spawn_bundle(UiCameraBundle::default());
+const PLAYER_HEADING_SIZE: f32 = 50.;
+const BUTTON_FONT_SIZE: f32 = 30.;
 
+/// Setup the game's UI
+fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServer>) {
+    // Root node
     commands
         .spawn_bundle(NodeBundle {
             style: Style {
@@ -40,6 +41,7 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
             ..default()
         })
         .with_children(|parent| {
+            // Left sidebar
             parent
                 .spawn_bundle(NodeBundle {
                     style: Style {
@@ -53,12 +55,13 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                 })
                 .with_children(|parent| {
                     for player in players.into_iter() {
+                        // Player heading
                         parent.spawn_bundle(TextBundle {
                             text: Text::with_section(
                                 player,
                                 TextStyle {
                                     font: assets.load("FiraSans-Bold.ttf"),
-                                    font_size: FONT_SIZE,
+                                    font_size: PLAYER_HEADING_SIZE,
                                     color: player.into(),
                                 },
                                 default(),
@@ -66,6 +69,7 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                             ..default()
                         });
 
+                        // Player hand UI
                         parent
                             .spawn_bundle(NodeBundle {
                                 style: Style {
@@ -79,6 +83,7 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                     }
                 });
 
+            // Buffer space
             parent.spawn_bundle(NodeBundle {
                 style: Style {
                     size: Size::new(Val::Percent(60.), Val::Auto),
@@ -88,6 +93,7 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                 ..default()
             });
 
+            // Right sidebar
             parent
                 .spawn_bundle(NodeBundle {
                     style: Style {
@@ -100,10 +106,12 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                     ..default()
                 })
                 .with_children(|parent| {
+                    // Next button
                     parent
                         .spawn_bundle(ButtonBundle::default())
                         .insert(NextButton)
                         .with_children(|parent| {
+                            // Button text
                             parent.spawn_bundle(TextBundle {
                                 text: Text::with_section(
                                     "Next",
@@ -119,10 +127,12 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                             });
                         });
 
+                    // Build settlement button
                     parent
                         .spawn_bundle(ButtonBundle::default())
                         .insert(BuildSettlementButton)
                         .with_children(|parent| {
+                            // Button text
                             parent.spawn_bundle(TextBundle {
                                 text: Text::with_section(
                                     "Build settlement",
@@ -138,10 +148,12 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                             });
                         });
 
+                    // Build road button
                     parent
                         .spawn_bundle(ButtonBundle::default())
                         .insert(BuildRoadButton)
                         .with_children(|parent| {
+                            // Button text
                             parent.spawn_bundle(TextBundle {
                                 text: Text::with_section(
                                     "Build road",

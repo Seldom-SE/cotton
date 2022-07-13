@@ -1,3 +1,4 @@
+/// Enumerate function for arrays. Not terribly efficient.
 pub fn enumerate<T: Copy, const COUNT: usize>(arr: [T; COUNT]) -> [(usize, T); COUNT] {
     let mut out = [None; COUNT];
 
@@ -8,6 +9,7 @@ pub fn enumerate<T: Copy, const COUNT: usize>(arr: [T; COUNT]) -> [(usize, T); C
     out.map(|el| el.unwrap())
 }
 
+/// Zip function for arrays. Not terribly efficient.
 pub fn zip<T: Copy, U: Copy, const COUNT: usize>(
     left: [T; COUNT],
     right: [U; COUNT],

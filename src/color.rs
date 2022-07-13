@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+/// Represents a player and their associated color
 #[derive(Clone, Copy, PartialEq)]
 pub enum PlayerColor {
     Blue,
@@ -31,6 +32,7 @@ impl From<PlayerColor> for Color {
     }
 }
 
+/// Doesn't represent turn order
 pub const COLORS: [PlayerColor; 4] = [
     PlayerColor::Blue,
     PlayerColor::Orange,
