@@ -66,8 +66,8 @@ impl Default for Turn {
 
 impl Turn {
     /// Gets the default next `Turn`
-    pub fn next(self, players: Players) -> Self {
-        let turn = match self {
+    pub fn next(self) -> Self {
+        match self {
             // Done building a settlement in setup phase
             Self::Setup {
                 round_2,
@@ -127,38 +127,6 @@ impl Turn {
             // Finished building a settlement
             Self::BuildSettlement { player } => Self::Build { player },
             Self::Done => Self::Done,
-        };
-
-        // Temporary, until a status bar is added
-        turn.print(players);
-
-        turn
-    }
-
-    /// Temporary, until a status bar is added
-    fn print(self, players: Players) {
-        match self {
-            Self::Setup {
-                round_2,
-                player,
-                road,
-            } => println!(
-                "Setup round {}: {}, place a {}",
-                if round_2 { 2 } else { 1 },
-                String::from(players[player]),
-                if road { "road" } else { "settlement" }
-            ),
-            Self::Production { player } => {
-                println!("{}: Production", String::from(players[player]))
-            }
-            Self::Build { player } => println!("{}: Build", String::from(players[player])),
-            Self::BuildRoad { player } => {
-                println!("{}: Build a road", String::from(players[player]))
-            }
-            Self::BuildSettlement { player } => {
-                println!("{}: Build a settlement", String::from(players[player]))
-            }
-            Self::Done => println!("Game over"),
         }
     }
 }
@@ -166,13 +134,12 @@ impl Turn {
 /// If in a phase that allows the next button, if the button is pressed, advance the turn
 fn press_next_button(
     buttons: Query<&Interaction, (With<NextButton>, Changed<Interaction>)>,
-    players: Res<Players>,
     mut turn: ResMut<Turn>,
 ) {
     if let Turn::Build { .. } = *turn {
         for interaction in buttons.iter() {
             if let Interaction::Clicked = interaction {
-                *turn = turn.next(*players);
+                *turn = turn.next();
             }
         }
     }

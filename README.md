@@ -10,7 +10,7 @@ Feel free to do the same!
 
 ## TODO
 
-- [ ] Status bar
+- [X] Status bar
 - [ ] Domestic trade
 - [ ] Maritime trade
 - [ ] Robber

@@ -9,6 +9,7 @@ use cursor::CursorPlugin;
 use image::ImagePlugin;
 use resource::ResourcePlugin;
 use road::RoadPlugin;
+use status::StatusPlugin;
 use turn::TurnPlugin;
 use ui::UiPlugin;
 
@@ -29,6 +30,7 @@ mod random;
 mod resource;
 mod road;
 mod robber;
+mod status;
 mod tile;
 mod turn;
 mod ui;
@@ -52,6 +54,7 @@ fn main() {
         .add_plugin(ImagePlugin)
         .add_plugin(ResourcePlugin)
         .add_plugin(RoadPlugin)
+        .add_plugin(StatusPlugin)
         .add_plugin(TurnPlugin)
         .add_plugin(UiPlugin)
         .insert_resource(ClearColor(CLEAR_COLOR))

@@ -6,8 +6,8 @@ use crate::{
     building::BuildingSlot,
     chit::ChitSlot,
     tile::Tile,
-    turn::{Players, Turn, PLAYER_COUNT},
-    ui::HandUi,
+    turn::{Turn, PLAYER_COUNT},
+    ui::{Die1, Die2, HandUi},
 };
 
 pub struct ResourcePlugin;
@@ -91,17 +91,37 @@ fn produce_resources(
     buildings: Query<(&BuildingSlot, &BoardIndex)>,
     tiles: Query<&Tile>,
     chits: Query<&ChitSlot>,
+    mut die_1s: Query<&mut UiImage, (With<Die1>, Without<Die2>)>,
+    mut die_2s: Query<&mut UiImage, (With<Die2>, Without<Die1>)>,
     board: Res<Board>,
-    players: Res<Players>,
+    assets: Res<AssetServer>,
     mut hands: ResMut<Hands>,
     mut turn: ResMut<Turn>,
 ) {
     if turn.is_changed() {
         if let Turn::Production { .. } = *turn {
             let mut rng = thread_rng();
-            let roll = rng.gen_range(1..=6) + rng.gen_range(1..=6);
 
-            println!("Rolled a {roll}");
+            let roll_1 = rng.gen_range(1..=6);
+            let roll_2 = rng.gen_range(1..=6);
+
+            for (roll, mut image) in
+                [(roll_1, die_1s.single_mut()), (roll_2, die_2s.single_mut())].into_iter()
+            {
+                *image = assets
+                    .load(match roll {
+                        1 => "die_1.png",
+                        2 => "die_2.png",
+                        3 => "die_3.png",
+                        4 => "die_4.png",
+                        5 => "die_5.png",
+                        6 => "die_6.png",
+                        _ => panic!("Invalid die roll"),
+                    })
+                    .into();
+            }
+
+            let total = roll_1 + roll_2;
 
             for (building, index) in buildings.iter() {
                 if let Some(building) = **building {
@@ -109,7 +129,7 @@ fn produce_resources(
 
                     for tile in BUILDING_TILE_ADJACENCY[**index] {
                         if let Some(chit) = **chits.get(board.chits[*tile]).unwrap() {
-                            if roll == *chit {
+                            if total == *chit {
                                 hand[tiles.get(board.tiles[*tile]).unwrap().resource().unwrap()
                                     as usize] += building.building_type.production();
                             }
@@ -118,7 +138,7 @@ fn produce_resources(
                 }
             }
 
-            *turn = turn.next(*players);
+            *turn = turn.next();
         }
     }
 }

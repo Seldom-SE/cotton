@@ -25,8 +25,19 @@ pub struct BuildRoadButton;
 #[derive(Component)]
 pub struct BuildSettlementButton;
 
+#[derive(Component)]
+pub struct Die1;
+
+#[derive(Component)]
+pub struct Die2;
+
+#[derive(Component)]
+pub struct StatusBar;
+
 const PLAYER_HEADING_SIZE: f32 = 50.;
 const BUTTON_FONT_SIZE: f32 = 30.;
+const STATUS_FONT_SIZE: f32 = 40.;
+const UI_BACKGROUND_COLOR: Color = Color::rgb(0.024, 0., 0.275);
 
 /// Setup the game's UI
 fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServer>) {
@@ -35,6 +46,7 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
         .spawn_bundle(NodeBundle {
             style: Style {
                 size: Size::new(Val::Percent(100.), Val::Percent(100.)),
+                align_items: AlignItems::FlexEnd,
                 ..default()
             },
             color: Color::NONE.into(),
@@ -50,7 +62,7 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                         align_items: AlignItems::FlexStart,
                         ..default()
                     },
-                    color: Color::rgb(0.024, 0., 0.275).into(),
+                    color: UI_BACKGROUND_COLOR.into(),
                     ..default()
                 })
                 .with_children(|parent| {
@@ -83,15 +95,39 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                     }
                 });
 
-            // Buffer space
-            parent.spawn_bundle(NodeBundle {
-                style: Style {
-                    size: Size::new(Val::Percent(60.), Val::Auto),
+            // Status bar
+            parent
+                .spawn_bundle(NodeBundle {
+                    style: Style {
+                        size: Size::new(Val::Percent(60.), Val::Percent(10.)),
+                        ..default()
+                    },
+                    color: UI_BACKGROUND_COLOR.into(),
                     ..default()
-                },
-                color: Color::NONE.into(),
-                ..default()
-            });
+                })
+                .with_children(|parent| {
+                    // Die 1
+                    parent.spawn_bundle(ImageBundle::default()).insert(Die1);
+
+                    // Die 2
+                    parent.spawn_bundle(ImageBundle::default()).insert(Die2);
+
+                    // Status text
+                    parent
+                        .spawn_bundle(TextBundle {
+                            text: Text::with_section(
+                                "",
+                                TextStyle {
+                                    font: assets.load("FiraSans-Bold.ttf"),
+                                    font_size: STATUS_FONT_SIZE,
+                                    color: default(),
+                                },
+                                default(),
+                            ),
+                            ..default()
+                        })
+                        .insert(StatusBar);
+                });
 
             // Right sidebar
             parent
@@ -102,7 +138,7 @@ fn init_ui(mut commands: Commands, players: Res<Players>, assets: Res<AssetServe
                         size: Size::new(Val::Percent(20.), Val::Percent(100.)),
                         ..default()
                     },
-                    color: Color::rgb(0.024, 0., 0.275).into(),
+                    color: UI_BACKGROUND_COLOR.into(),
                     ..default()
                 })
                 .with_children(|parent| {
