@@ -8,6 +8,10 @@ I'm avoiding using states and events, since I tend to use them a lot.
 When this is done, I might fork it into a private repo and make a bit more of my own game.
 Feel free to do the same!
 
+## Update (2022-08-01)
+
+Currently, I'm working on a private fork instead, since I was inspired to take it in a different direction.
+
 ## TODO
 
 - [X] Status bar
